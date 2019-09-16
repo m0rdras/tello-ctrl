@@ -10,7 +10,7 @@ const port = process.env.PORT || 3000;
 
 const app = express();
 
-const staticFolder = path.join("..", "ui");
+const staticFolder = path.join(__dirname, "..", "ui");
 
 app.use("/", express.static(staticFolder, { fallthrough: false }));
 
@@ -23,15 +23,13 @@ const cam = new Camera();
 const socket = new SocketConnection(socketio(server));
 
 const update = async () => {
-  let frame;
-  try {
-    frame = await cam.capture();
-  } catch (err) {
-    log("Error while capturing camera", err);
-    return;
+  const frame = await cam.captureJpeg();
+  if (frame) {
+    socket.send({
+      image: true,
+      buffer: frame.toString("base64")
+    });
   }
-
-  socket.send(frame.getData());
 };
 
 module.exports.app = app;

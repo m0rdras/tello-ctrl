@@ -11,12 +11,19 @@ class Camera {
   async capture() {
     try {
       const frame = await this.cam.readAsync();
-      log("captured frame");
       return frame;
     } catch (err) {
       log(err);
       return null;
     }
+  }
+
+  async captureJpeg() {
+    const frame = await this.capture();
+    if (frame) {
+      return cv.imencodeAsync(".jpg", frame);
+    }
+    return null;
   }
 }
 module.exports = Camera;

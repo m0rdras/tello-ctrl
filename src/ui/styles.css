@@ -1,0 +1,13 @@
+.container {
+    padding-top: 50px;
+}
+
+.center {
+    text-align: center;
+}
+
+#canvas-video {
+    width: 800px;
+    height: 680px;
+    border: 1px solid #ccc;
+}

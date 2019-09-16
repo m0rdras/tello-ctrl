@@ -1,3 +1,3 @@
 const server = require("./src/server/server");
 
-server.update();
+setInterval(server.update, 1000 / 15);
