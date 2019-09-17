@@ -33,7 +33,7 @@ const update = async () => {
     const frame = await cam.captureJpeg();
     socket.send({
       image: true,
-      buffer: frame.toString("base64")
+      buffer: frame
     });
   } catch (err) {
     log("Error while capturing frame, continuing");
