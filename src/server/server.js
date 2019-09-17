@@ -1,6 +1,7 @@
 const express = require("express");
 const SocketConnection = require("./socket");
 const Camera = require("./camera");
+const Tello = require("./tello");
 const log = require("debug")("tctrl:server");
 const http = require("http");
 const socketio = require("socket.io");
@@ -25,6 +26,7 @@ server.listen(port, function() {
 
 const cam = new Camera();
 const socket = new SocketConnection(socketio(server));
+const tello = new Tello();
 
 const update = async () => {
   try {
