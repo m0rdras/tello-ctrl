@@ -37,8 +37,6 @@
 const canvas = document.getElementById("canvas-video");
 const gl = canvas.getContext("webgl");
 
-const topWindow = this;
-
 function setRectangle(gl, x, y, width, height) {
   const x1 = x;
   const x2 = x + width;
@@ -56,11 +54,11 @@ function setRectangle(gl, x, y, width, height) {
  * @param {string} msg The message to log.
  */
 function defaultErrorCb(msg) {
-  if (topWindow.console) {
-    if (topWindow.console.error) {
-      topWindow.console.error(msg);
-    } else if (topWindow.console.log) {
-      topWindow.console.log(msg);
+  if (window.console) {
+    if (window.console.error) {
+      window.console.error(msg);
+    } else if (window.console.log) {
+      window.console.log(msg);
     }
   }
 }

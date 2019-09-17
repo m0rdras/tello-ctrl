@@ -3,6 +3,7 @@ const log = require("debug")("tctrl:camera");
 
 class Camera {
   constructor(camId = 0) {
+    log("Initializing video capture");
     this.cam = new cv.VideoCapture(camId);
   }
 

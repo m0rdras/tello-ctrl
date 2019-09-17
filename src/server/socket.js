@@ -3,11 +3,11 @@ const log = require("debug")("tctrl:socket");
 class SocketConnection {
   constructor(socket) {
     this.socket = socket;
-    socket.on("connection", socket => this.onConnection);
+    socket.on("connection", this.onConnection);
   }
 
   onConnection(con) {
-    log("New client connected", con);
+    log("New client connected");
   }
 
   send(data) {
