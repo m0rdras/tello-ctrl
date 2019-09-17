@@ -7,7 +7,7 @@ class SocketConnection {
   }
 
   onConnection(con) {
-    log("new connection", con);
+    log("New client connected", con);
   }
 
   send(data) {

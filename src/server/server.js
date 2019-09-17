@@ -6,13 +6,17 @@ const http = require("http");
 const socketio = require("socket.io");
 const path = require("path");
 
+const DEFAULT_FPS = 15;
+
 const port = process.env.PORT || 3000;
 
 const app = express();
 
-const staticFolder = path.join(__dirname, "..", "ui");
+const staticFolder = path.join(__dirname, "..", "client");
+const assetFolder = path.join(__dirname, "..", "..", "assets");
 
-app.use("/", express.static(staticFolder, { fallthrough: false }));
+app.use("/", express.static(staticFolder));
+app.use("/assets", express.static(assetFolder));
 
 const server = http.createServer(app);
 server.listen(port, function() {
@@ -23,14 +27,20 @@ const cam = new Camera();
 const socket = new SocketConnection(socketio(server));
 
 const update = async () => {
-  const frame = await cam.captureJpeg();
-  if (frame) {
+  try {
+    const frame = await cam.captureJpeg();
     socket.send({
       image: true,
       buffer: frame.toString("base64")
     });
+  } catch (err) {
+    log("Error while capturing frame, continuing");
   }
 };
 
+const startCapture = fps => {
+  setInterval(update, 1000 / (fps || DEFAULT_FPS));
+};
+
 module.exports.app = app;
-module.exports.update = update;
+module.exports.startCapture = startCapture;

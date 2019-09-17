@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="initial-scale=1" />
+        <title>trello-ctrl</title>
+        <link rel="stylesheet" type="text/css" href="/styles.css" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+        <link rel="manifest" href="/assets/site.webmanifest">
+        <meta name="msapplication-TileColor" content="#da532c">
+        <meta name="theme-color" content="#ffffff">
+    </head>
+    <body>
+        <div class="container center">
+            <canvas id="canvas-video" width="800" height="600"></canvas>
+        </div>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/webgl-utils.js"></script>
+        <script id="2d-vertex-shader" type="x-shader/x-vertex">
+              attribute vec2 a_position;
+              attribute vec2 a_texCoord;
+              uniform vec2 u_resolution;
+              varying vec2 v_texCoord;
+              void main() {
+                 vec2 zeroToOne = a_position / u_resolution;
+                 vec2 zeroToTwo = zeroToOne * 2.0;
+                 vec2 clipSpace = zeroToTwo - 1.0;
+                 gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+                 v_texCoord = a_texCoord;
+              }
+        </script>
+        <script id="2d-fragment-shader" type="x-shader/x-fragment">
+              precision mediump float;
+              uniform sampler2D u_image;
+              varying vec2 v_texCoord;
+              void main() {
+                 gl_FragColor = texture2D(u_image, v_texCoord);
+              }
+        </script>
+        <script src="/trello-ctrl.js"></script>
+    </body>
+</html>
