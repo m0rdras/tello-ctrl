@@ -2,6 +2,7 @@ const log = require("debug")("tctrl:socket");
 
 class SocketConnection {
   constructor(socket) {
+    log("Initializing WebSocket");
     this.socket = socket;
     socket.on("connection", this.onConnection);
   }

@@ -14,12 +14,14 @@ function blobToImage(imageData) {
 }
 
 let lastFrame;
+let frameCount = 0;
 
 window.onload = () => {
   initWebGLUtils();
 
   socket.on("frame", function(data) {
     if (data.image) {
+      frameCount++;
       if (lastFrame && "undefined" != typeof URL) {
         URL.revokeObjectURL(lastFrame);
       }
@@ -30,4 +32,10 @@ window.onload = () => {
       };
     }
   });
+
+  setInterval(() => {
+    const fpsTxt = document.getElementById("fps-text");
+    fpsTxt.innerText = frameCount + " fps";
+    frameCount = 0;
+  }, 1000);
 };

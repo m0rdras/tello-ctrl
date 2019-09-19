@@ -16,5 +16,14 @@ class Camera {
       return cv.imencodeAsync(".jpg", frame);
     });
   }
+
+  convertFrameToJpeg(frame, width, height) {
+    if (width) {
+      return frame
+        .resizeAsync(height, width)
+        .then(img => cv.imencodeAsync(".jpg", img));
+    }
+    return cv.imencodeAsync(".jpg", frame);
+  }
 }
 module.exports = Camera;

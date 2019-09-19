@@ -3,6 +3,7 @@ const sdk = require("tellojs");
 
 class Tello {
   connect() {
+    log("Connecting to Tello");
     return sdk.control.connect();
   }
 
