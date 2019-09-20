@@ -6,6 +6,7 @@ const path = require("path");
 
 const SocketConnection = require("./socket");
 const Camera = require("./camera");
+const FrameProcessorClient = require('./worker/frameprocessor.client');
 const Tello = require("./tello");
 
 const express = require("express");
@@ -17,6 +18,7 @@ const FRAME_H = 600;
 
 class Server {
   static DEFAULT_PORT = 3000;
+  static WORKER_PROCESSES = 1;
 
   constructor(fps = DEFAULT_FPS) {
     log("Initializing Server, fps", fps);
@@ -40,6 +42,7 @@ class Server {
 
     this.cam = new Camera(0);
     this.socket = new SocketConnection(socketio(this.httpServer));
+    this.processor = FrameProcessorClient.start(Server.WORKER_PROCESSES);
     this.tello = new Tello();
   }
 
@@ -54,6 +57,8 @@ class Server {
       let start = process.hrtime();
       const frame = await this.cam.capture();
       const captureTime = this.getDiffNs(start);
+
+      this.processor.sendFrame(frame);
 
       start = process.hrtime();
       const img = await this.cam.convertFrameToJpeg(frame, FRAME_W, FRAME_H);
