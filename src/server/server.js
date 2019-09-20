@@ -12,15 +12,16 @@ const Tello = require("./tello");
 const express = require("express");
 const socketio = require("socket.io");
 
-const DEFAULT_FPS = 60;
-const FRAME_W = 800;
-const FRAME_H = 600;
+const NS_PER_SEC = 1e9;
 
 class Server {
+  static DEFAULT_FPS = 10;
   static DEFAULT_PORT = 3000;
   static WORKER_PROCESSES = 1;
+  static FRAME_W = 800;
+  static FRAME_H = 600;
 
-  constructor(fps = DEFAULT_FPS) {
+  constructor(fps = Server.DEFAULT_FPS) {
     log("Initializing Server, fps", fps);
 
     const port = process.env.PORT || Server.DEFAULT_PORT;
@@ -46,8 +47,7 @@ class Server {
     this.tello = new Tello();
   }
 
-  getDiffNs(start) {
-    const NS_PER_SEC = 1e9;
+  static getDiffNs(start) {
     const diff = process.hrtime(start);
     return diff[0] * NS_PER_SEC + diff[1];
   }
@@ -56,20 +56,20 @@ class Server {
     try {
       let start = process.hrtime();
       const frame = await this.cam.capture();
-      const captureTime = this.getDiffNs(start);
+      const captureTime = Server.getDiffNs(start);
 
       this.processor.sendFrame(frame);
 
       start = process.hrtime();
-      const img = await this.cam.convertFrameToJpeg(frame, FRAME_W, FRAME_H);
-      const conversionTime = this.getDiffNs(start);
+      const img = await this.cam.convertFrameToJpeg(frame, Server.FRAME_W, Server.FRAME_H);
+      const conversionTime = Server.getDiffNs(start);
 
       start = process.hrtime();
       this.socket.send({
         image: true,
         buffer: img
       });
-      const sendTime = this.getDiffNs(start);
+      const sendTime = Server.getDiffNs(start);
 
       fpsLog(`timings: capture ${captureTime} conversion ${conversionTime} sending ${sendTime}`);
     } catch (err) {
@@ -78,10 +78,10 @@ class Server {
   }
 
   async scheduleUpdate() {
-    const startTime = Date.now();
+    const startTime = process.hrtime();
     await this.update();
-    const duration = Date.now() - startTime;
-    const target = 1000 / this.fps;
+    const duration = Server.getDiffNs(startTime) / 1e6;
+    const target = 1e3 / this.fps;
     const deltaToNext = Math.max(1, Math.floor(target - duration));
 
     fpsLog(
