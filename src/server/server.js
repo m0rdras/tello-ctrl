@@ -15,11 +15,9 @@ const socketio = require("socket.io");
 const NS_PER_SEC = 1e9;
 
 class Server {
-  static DEFAULT_FPS = 10;
+  static DEFAULT_FPS = 40;
   static DEFAULT_PORT = 3000;
   static WORKER_PROCESSES = 1;
-  static FRAME_W = 800;
-  static FRAME_H = 600;
 
   constructor(fps = Server.DEFAULT_FPS) {
     log("Initializing Server, fps", fps);
@@ -41,7 +39,6 @@ class Server {
       log("HTTP server listening on port " + port);
     });
 
-    this.cam = new Camera(0);
     this.socket = new SocketConnection(socketio(this.httpServer));
     this.processor = FrameProcessorClient.start(Server.WORKER_PROCESSES);
     this.tello = new Tello();
@@ -61,7 +58,7 @@ class Server {
       this.processor.sendFrame(frame);
 
       start = process.hrtime();
-      const img = await this.cam.convertFrameToJpeg(frame, Server.FRAME_W, Server.FRAME_H);
+      const img = await this.cam.convertFrameToJpeg(frame);
       const conversionTime = Server.getDiffNs(start);
 
       start = process.hrtime();
@@ -91,7 +88,26 @@ class Server {
     setTimeout(() => this.scheduleUpdate(), deltaToNext);
   }
 
-  startCapture() {
+  async startCapture() {
+    try {
+      await this.tello.connect();
+    } catch (err) {
+      log("Could not connect to Tello", err);
+      return;
+    }
+
+    try {
+      await this.tello.control.streamOn();
+    } catch (err) {
+      log("Could not start Tello video stream", err);
+    }
+
+    try {
+      this.cam = new Camera(Tello.VS_UDP_ADDRESS);
+    } catch (err) {
+      log("Could not capture camera video stream", err);
+    }
+
     this.scheduleUpdate();
   }
 }

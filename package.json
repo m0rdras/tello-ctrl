@@ -12,9 +12,12 @@
     "express": "^4.17.1",
     "opencv4nodejs": "^5.2.0",
     "socket.io": "^2.2.0",
-    "tellojs": "^0.1.41"
+    "tellojs": "m0rdras/tellojs"
   },
   "devDependencies": {
     "prettier": "^1.18.2"
+  },
+  "opencv4nodejs": {
+    "autoBuildOpencvVersion": "4.1.1"
   }
 }
