@@ -6,7 +6,7 @@ const path = require("path");
 
 const SocketConnection = require("./socket");
 const Camera = require("./camera");
-const FrameProcessorClient = require('./worker/frameprocessor.client');
+const FrameProcessorClient = require("./worker/frameprocessor.client");
 const Tello = require("./tello");
 
 const express = require("express");
@@ -68,7 +68,9 @@ class Server {
       });
       const sendTime = Server.getDiffNs(start);
 
-      fpsLog(`timings: capture ${captureTime} conversion ${conversionTime} sending ${sendTime}`);
+      fpsLog(
+        `timings: capture ${captureTime} conversion ${conversionTime} sending ${sendTime}`
+      );
     } catch (err) {
       log("Error while capturing frame, continuing", err);
     }
