@@ -1,4 +1,4 @@
 const Server = require("./src/server/server");
 
 const server = new Server();
-server.startCapture();
+(async () => await server.startCapture())();

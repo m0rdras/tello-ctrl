@@ -11,14 +11,13 @@ const Tello = require("./tello");
 const express = require("express");
 const socketio = require("socket.io");
 
-const DEFAULT_FPS = 60;
-const FRAME_W = 800;
-const FRAME_H = 600;
+const NS_PER_SEC = 1e9;
 
 class Server {
+  static DEFAULT_FPS = 40;
   static DEFAULT_PORT = 3000;
 
-  constructor(fps = DEFAULT_FPS) {
+  constructor(fps = Server.DEFAULT_FPS) {
     log("Initializing Server, fps", fps);
 
     const port = process.env.PORT || Server.DEFAULT_PORT;
@@ -38,13 +37,11 @@ class Server {
       log("HTTP server listening on port " + port);
     });
 
-    this.cam = new Camera(0);
     this.socket = new SocketConnection(socketio(this.httpServer));
     this.tello = new Tello();
   }
 
-  getDiffNs(start) {
-    const NS_PER_SEC = 1e9;
+  static getDiffNs(start) {
     const diff = process.hrtime(start);
     return diff[0] * NS_PER_SEC + diff[1];
   }
@@ -53,30 +50,32 @@ class Server {
     try {
       let start = process.hrtime();
       const frame = await this.cam.capture();
-      const captureTime = this.getDiffNs(start);
+      const captureTime = Server.getDiffNs(start);
 
       start = process.hrtime();
-      const img = await this.cam.convertFrameToJpeg(frame, FRAME_W, FRAME_H);
-      const conversionTime = this.getDiffNs(start);
+      const img = await this.cam.convertFrameToJpeg(frame);
+      const conversionTime = Server.getDiffNs(start);
 
       start = process.hrtime();
       this.socket.send({
         image: true,
         buffer: img
       });
-      const sendTime = this.getDiffNs(start);
+      const sendTime = Server.getDiffNs(start);
 
-      fpsLog(`timings: capture ${captureTime} conversion ${conversionTime} sending ${sendTime}`);
+      fpsLog(
+        `timings: capture ${captureTime} conversion ${conversionTime} sending ${sendTime}`
+      );
     } catch (err) {
       log("Error while capturing frame, continuing", err);
     }
   }
 
   async scheduleUpdate() {
-    const startTime = Date.now();
+    const startTime = process.hrtime();
     await this.update();
-    const duration = Date.now() - startTime;
-    const target = 1000 / this.fps;
+    const duration = Server.getDiffNs(startTime) / 1e6;
+    const target = 1e3 / this.fps;
     const deltaToNext = Math.max(1, Math.floor(target - duration));
 
     fpsLog(
@@ -86,7 +85,26 @@ class Server {
     setTimeout(() => this.scheduleUpdate(), deltaToNext);
   }
 
-  startCapture() {
+  async startCapture() {
+    try {
+      await this.tello.connect();
+    } catch (err) {
+      log("Could not connect to Tello", err);
+      return;
+    }
+
+    try {
+      await this.tello.control.streamOn();
+    } catch (err) {
+      log("Could not start Tello video stream", err);
+    }
+
+    try {
+      this.cam = new Camera(Tello.VS_UDP_ADDRESS);
+    } catch (err) {
+      log("Could not capture camera video stream", err);
+    }
+
     this.scheduleUpdate();
   }
 }

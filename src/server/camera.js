@@ -1,5 +1,5 @@
-const cv = require("opencv4nodejs");
 const log = require("debug")("tctrl:camera");
+const cv = require("opencv4nodejs");
 
 class Camera {
   constructor(camId = 0) {
@@ -11,12 +11,6 @@ class Camera {
     return this.cam.readAsync();
   }
 
-  captureJpeg() {
-    return this.capture().then(frame => {
-      return cv.imencodeAsync(".jpg", frame);
-    });
-  }
-
   convertFrameToJpeg(frame, width, height) {
     if (width) {
       return frame
@@ -25,5 +19,10 @@ class Camera {
     }
     return cv.imencodeAsync(".jpg", frame);
   }
+
+  get frameId() {
+    return this.cam.get(cv.CAP_PROP_POS_FRAMES);
+  }
 }
+
 module.exports = Camera;
